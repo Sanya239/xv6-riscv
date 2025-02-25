@@ -4,11 +4,11 @@
 int max_figure_size = 11;
 
 void fileread_error() {
-    printf("%s", "unexpected error\n");
+    fprintf(2,"%s", "unexpected error\n");
 }
 
 void format_error() {
-    printf("%s", "incorrect format\n");
+    fprintf(2,"%s", "incorrect format\n");
 }
 
 void read_chars(char *buff) {
