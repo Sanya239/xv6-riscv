@@ -1,6 +1,6 @@
 .data
 msg: .asciz "Incorrect format\n"
-okmsg:  .asciz "ok\n"
+numbermsg: .asciz "%d\n"
 buffer: .space 30
 
 .text
@@ -9,80 +9,79 @@ main:
     la a0, buffer
     call gets
     mv s0, a0
-    la t0, buffer
-    li t1, 0
 
-    li t4, 32
-    li t5, 32
-    jal t6, read_before_t4_or_t5
+    la a0, buffer
+    jal ra, verify
 
-
-    li t4, 0
-    li t5, 10
-    jal t6, read_before_t4_or_t5
-
-read_second_num:
-    la t0, buffer
-    add t0, t0, t1
-    addi t0, t0, 1
-
-    jal ra, check_for_minus
-    mv a0, t0
-
-
-    call atoi
+verified:
+    mv a0, s0
+    jal ra, read_num
     mv s1, a0
-    beqz t1, read_fist_num
-    sub s1, zero, s1
-
-read_fist_num:
-    la t0, buffer
-    jal ra, check_for_minus
-    mv a0, t0
-    call atoi
-    mv s1, a0
-    beqz t1, myadd
-    sub s1, zero, s1
-
-myadd:
-    add s2, s1, s2
 
     mv a0, s2
-    call printf
+    jal ra, read_num
+    mv s2, a0
 
 
+    add s3, s1, s2
+    li a0, 1
+    la a1, numbermsg
+    mv a2, s3
+    call fprintf
+    jal zero, exit
 
-read_before_t4_or_t5:
-    jal ra, ok
-    jal ra, check_for_minus
-    lb t2, 0(t0)
-    beq t2, t4, return_to_t6
-    beq t2, t5, return_to_t6
-    li t3, 58
-    bge t2, t3, format_error
-    li t3, 48
-    blt t2, t3, format_error
-    addi t0, t0, 1
-    bne t4, t5, read_before_t4_or_t5 #if we look not for ' ' we don't count symbols
+verify: #check format of a0 and return whitespace position to a0 (or exit with error). return to ra
+    lb t0, 0(a0)
+    li t1, 0
+    li t6, 45
+    bne t0, t6, read_before_whitespace
+    addi a0, a0, 1
     addi t1, t1, 1
-    jal zero, read_before_t4_or_t5
+    jal zero, read_before_whitespace
 
-return_to_t6:
-    jalr zero, t6, 0
-
-check_for_minus:
-    jal ra, ok
-
-    lb t2, 0(t0)
-    li t3, 45
-
-    bne t2, t3, return_to_ra
-    addi t0, t0, 1
+whitespace_found:
+    addi a0, a0, 1 #skip whitespace
     addi t1, t1, 1
-    jalr zero, ra, 0
+    add s2, s0, t1 #second number start
+    lb t0, 0(a0)
+    li t6, 45
+    bne t0, t6, read_before_0_or_newline
+    addi a0, a0, 1
+    addi t1, t1, 1
+    jal zero, read_before_0_or_newline
 
-return_to_ra:
-    jalr zero, ra, 0
+
+read_before_0_or_newline:
+    lb t0, 0(a0)
+    li t6, 10 # \n
+    beq t0, t6, verified
+    li t6, 0 # 0 symbol
+    beq t0, t6, verified
+
+
+    li t6, 58 # '9' +1
+    bge t0, t6, format_error
+    li t6, 48 #'0
+    blt t0, t6, format_error
+    addi a0, a0, 1
+    jal zero, read_before_0_or_newline
+
+read_before_whitespace:
+    lb t0, 0(a0)
+    li t6, 32 #whitespace
+    beq t0, t6, whitespace_found
+
+
+    li t6, 58 # '9' +1
+    bge t0, t6, format_error
+
+    li t6, 48 #'0'
+    blt t0, t6, format_error
+
+    addi a0, a0, 1
+    addi t1, t1, 1
+    jal zero, read_before_whitespace
+
 
 format_error:
     li a0, 1
@@ -92,8 +91,22 @@ format_error:
     li a0, 1
     ecall
 
-ok:
-    li a0, 1
-    la a1, okmsg
-    call fprintf
-    jalr zero, ra, 0
+exit: #exit with code 0
+    li a7, 2
+    li a0, 0
+    ecall
+
+read_num: #read positive or negative number and put it to a0. Then return to ra
+    lb t0, 0(a0)
+    li t1, 45
+    li s11, 1
+    bne t0, t1, calling_atoi_and_mult_s11
+    li s11, -1
+    addi a0, a0, 1
+    jal zero, calling_atoi_and_mult_s11
+
+calling_atoi_and_mult_s11:
+    mv s10, ra
+    call atoi
+    mul a0, a0, s11
+    jalr zero, s10, 0
