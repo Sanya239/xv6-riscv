@@ -7,6 +7,7 @@ buffer: .space 30
 .global main
 main:
     la a0, buffer
+    li a1, 30
     call gets
     mv s0, a0
 
