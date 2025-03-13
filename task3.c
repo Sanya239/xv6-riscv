@@ -16,47 +16,69 @@ main(int argc, char *argv[]) {
     int pipe_ends[2];
 
     if (pipe(pipe_ends) < 0) {
-        fprintf(stderr, "Failed to open a pipe\n");
-        return 1;
+        perror("Failed to open a pipe\n");
+        exit(1);
     }
 
     int child_id;
     child_id = fork();
     if (child_id < 0) {
-        fprintf(stderr, "Failed to fork process\n");
+        perror("Failed to fork process\n");
         exit(2);
     }
     if (child_id > 0) {
-        close(pipe_ends[0]);
+
+        int success = close(pipe_ends[0]);
+        if (success == -1) {
+            perror("Parent to close the pipe\n");
+            exit(3);
+        }
         for (int i = 0; i < argc; i++) {
             int to_write = strlen(argv[i]);
-            int written = 0;
+            ssize_t written = 0;
             while (to_write > 0) {
                 written += write(pipe_ends[1], argv[i] + written, to_write);
                 if (written < 0) {
-                    fprintf(stderr, "Failed to write into the pipe\n");
+                    perror("Failed to write into the pipe\n");
+                    exit(2);
                 }
                 to_write -= written;
             }
-            if (write(pipe_ends[1], " ", 1) != 1) {
-                fprintf(stderr, "Failed to write into the pipe\n");
+            if (write(pipe_ends[1], "\n", 1) != (ssize_t) 1) {
+                perror("Failed to write into the pipe\n");
+                exit(2);
             }
         }
-        write(pipe_ends[1], "\n", 1);
 
-        close(pipe_ends[1]);
+        success = close(pipe_ends[1]);
+        if (success == -1) {
+            perror("Parent to close the pipe\n");
+            exit(3);
+        }
         int status;
         wait(&status);
+        if (status == -1) {
+            perror("wait failed");
+            exit(2);
+        }
         printf("Child process exit code: %d\n", status);
     }
     if (child_id == 0) {
-        close(pipe_ends[1]);
-        close(0);
+        int success = close(pipe_ends[1]);
+        if (success == -1) {
+            perror("Child to close the pipe\n");
+            exit(3);
+        }
+        success = close(0);
+        if (success == -1) {
+            perror("Child to close stdin\n");
+            exit(3);
+        }
         char buf[100];
         int r = 0;
         while ((r = read(pipe_ends[0], buf, 99)) != 0) {
             buf[r] = 0;
-            int written = 0;
+            ssize_t written = 0;
             while (written < r + 1) {
                 written += write(1, buf + written, r + 1 - written);
             }

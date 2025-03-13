@@ -19,18 +19,27 @@ main(int argc, char *argv[]) {
         exit(1);
     }
     if (cild_id > 0) {
-        printf("parent process id: %d\nchild process id: %d\n", getpid(), cild_id);
+        printf("Parent process id: %d\nchild process id: %d\n", getpid(), cild_id);
         int status;
         if (use_kill) {
             status = kill(cild_id);
+            if (status == -1) {
+                fprintf(2, "Failed to kill cild process");
+                exit(2);
+            }
         } else {
             wait(&status);
+            if (status == -1) {
+                fprintf(2, "wait failed");
+                exit(2);
+            }
         }
-        printf("child process exit code: %d\n", status);
+        printf("Child process exit code: %d\n", status);
+        exit(0);
     }
     if (cild_id == 0) {
         sleep(time_to_sleep);
-        exit(1);
+        exit(0);
     }
 
 }

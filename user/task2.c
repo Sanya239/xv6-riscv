@@ -7,7 +7,7 @@ main(int argc, char *argv[]) {
 
     if (pipe(pipe_ends) < 0) {
         fprintf(2, "Failed to open a pipe\n");
-        return 1;
+        exit(1);
     }
 
     int child_id;
@@ -17,7 +17,11 @@ main(int argc, char *argv[]) {
         exit(2);
     }
     if (child_id > 0) {
-        close(pipe_ends[0]);
+        int success = close(pipe_ends[0]);
+        if (success == -1) {
+            fprintf(2, "Parent to close the pipe\n");
+            exit(3);
+        }
         for (int i = 0; i < argc; i++) {
             int to_write = strlen(argv[i]);
             int written = 0;
@@ -25,25 +29,46 @@ main(int argc, char *argv[]) {
                 written += write(pipe_ends[1], argv[i] + written, to_write);
                 if (written < 0) {
                     fprintf(2, "Failed to write into the pipe\n");
+                    exit(100);
                 }
                 to_write -= written;
             }
-            if (write(pipe_ends[1], " ", 1) != 1) {
+            if (write(pipe_ends[1], "\n", 1) != 1) {
                 fprintf(2, "Failed to write into the pipe\n");
+                exit(100);
             }
         }
-        write(pipe_ends[1], "\n", 1);
 
-        close(pipe_ends[1]);
+        success = close(pipe_ends[1]);
+        if (success == -1) {
+            fprintf(2, "Parent to close the pipe\n");
+            exit(3);
+        }
         int status;
         wait(&status);
+        if (status == -1) {
+            fprintf(2, "wait failed");
+            exit(2);
+        }
         printf("Child process exit code: %d\n", status);
     }
     if (child_id == 0) {
-        close(pipe_ends[1]);
-        close(0);
+        int success = close(pipe_ends[1]);
+        if (success == -1) {
+            fprintf(2, "Child to close the pipe\n");
+            exit(3);
+        }
+        success = close(0);
+        if (success == -1) {
+            fprintf(2, "Child to close the pipe\n");
+            exit(3);
+        }
         dup(pipe_ends[0]);
-        close(pipe_ends[0]);
+        success = close(pipe_ends[0]);
+        if (success == -1) {
+            fprintf(2, "Child to close the pipe\n");
+            exit(3);
+        }
         char *argv_[] = {"/wc", 0};
         exec("/wc", argv_);
     }
