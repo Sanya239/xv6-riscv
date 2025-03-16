@@ -41,7 +41,7 @@ main(int argc, char *argv[]) {
 
         success = close(pipe_ends[1]);
         if (success == -1) {
-            fprintf(2, "Parent to close the pipe\n");
+            fprintf(2, "Parent failed to close the pipe\n");
             exit(3);
         }
         int status;
@@ -55,18 +55,22 @@ main(int argc, char *argv[]) {
     if (child_id == 0) {
         int success = close(pipe_ends[1]);
         if (success == -1) {
-            fprintf(2, "Child to close the pipe\n");
+            fprintf(2, "Child failed to close the pipe\n");
             exit(3);
         }
         success = close(0);
         if (success == -1) {
-            fprintf(2, "Child to close the pipe\n");
+            fprintf(2, "Child failed to close the pipe\n");
             exit(3);
         }
-        dup(pipe_ends[0]);
+        int new_desc = dup(pipe_ends[0]);
+        if (new_desc != 0) { // descriptor 0 is closed, so the 0 value must be taken by dup
+            fprintf(2, "Failed to duplicate descriptor\n");
+            exit(4);
+        }
         success = close(pipe_ends[0]);
         if (success == -1) {
-            fprintf(2, "Child to close the pipe\n");
+            fprintf(2, "Child failed to close the pipe\n");
             exit(3);
         }
         char *argv_[] = {"/wc", 0};

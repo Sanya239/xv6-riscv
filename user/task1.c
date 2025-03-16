@@ -13,18 +13,18 @@ main(int argc, char *argv[]) {
             use_kill = 1;
         }
     }
-    int cild_id = fork();
-    if (cild_id < 0) {
+    int child_id = fork();
+    if (child_id < 0) {
         fprintf(2, "Failed to fork process\n");
         exit(1);
     }
-    if (cild_id > 0) {
-        printf("Parent process id: %d\nchild process id: %d\n", getpid(), cild_id);
+    if (child_id > 0) {
+        printf("Parent process id: %d\nchild process id: %d\n", getpid(), child_id);
         int status;
         if (use_kill) {
-            status = kill(cild_id);
+            status = kill(child_id);
             if (status == -1) {
-                fprintf(2, "Failed to kill cild process");
+                fprintf(2, "Failed to kill child process");
                 exit(2);
             }
         } else {
@@ -37,7 +37,7 @@ main(int argc, char *argv[]) {
         printf("Child process exit code: %d\n", status);
         exit(0);
     }
-    if (cild_id == 0) {
+    if (child_id == 0) {
         sleep(time_to_sleep);
         exit(0);
     }
