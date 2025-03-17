@@ -108,9 +108,4 @@ struct proc {
     char name[16];               // Process name (debugging)
 };
 
-struct procinfo {
-    enum procstate state;
-    int pid;
-    int parent;
-    char name[16];
-};
+

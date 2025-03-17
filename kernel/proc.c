@@ -668,28 +668,34 @@ procdump(void) {
 }
 
 int sys_ps_listinfo(void) {
-    procdump();
     uint64 plist;
     int lim;
     argaddr(0, &plist);
     argint(1, &lim);
-    if (plist == 0 || NPROC > lim) {
-        return NPROC;
+    int proc_count = 0;
+    struct proc *p;
+
+    for (p = proc; p < &proc[NPROC]; p++) {
+        if (p->state != UNUSED) {
+            proc_count++;
+        }
+    }
+
+    if (plist == 0 || proc_count > lim) {
+        return proc_count;
     }
     struct procinfo current;
 
 
-    struct proc *p;
-    int proc_count = 0;
     for (p = proc; p < &proc[NPROC]; p++) {
-        if (p->state == UNUSED) {
+        if (p->state == UNUSED || p->state == USED) {
             plist += sizeof(struct procinfo);
             continue;
         }
-        proc_count++;
 
         acquire(&wait_lock);
-        current.parent = (p->parent) ? p->parent->pid : -1;
+        current.parent_id = (p->parent) ? p->parent->pid : -1;
+        strncpy(current.parent_name, (p->parent) ? p->parent->name : "", 16);
         release(&wait_lock);
         acquire(&p->lock);
         current.state = p->state;
@@ -698,7 +704,7 @@ int sys_ps_listinfo(void) {
         current.pid = p->pid;
 
         if (copyout(myproc()->pagetable, plist, (char *) &current, sizeof(struct procinfo)) < 0) {
-            return -2;
+            return -1;
         }
         plist += sizeof(struct procinfo);
     }
