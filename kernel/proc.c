@@ -676,7 +676,7 @@ int sys_ps_listinfo(void) {
     struct proc *p;
 
     for (p = proc; p < &proc[NPROC]; p++) {
-        if (p->state != UNUSED) {
+        if (p->state != UNUSED && p->state != USED) {
             proc_count++;
         }
     }
@@ -694,8 +694,15 @@ int sys_ps_listinfo(void) {
         }
 
         acquire(&wait_lock);
-        current.parent_id = (p->parent) ? p->parent->pid : -1;
-        strncpy(current.parent_name, (p->parent) ? p->parent->name : "", 16);
+        if (p->parent != 0) {
+            acquire(&p->parent->lock);
+            current.parent_id = p->parent->pid;
+            release(&p->parent->lock);
+            strncpy(current.parent_name, p->parent->name, 16);
+        } else {
+            current.parent_id = -1;
+            strncpy(current.parent_name, "", 16);
+        }
         release(&wait_lock);
         acquire(&p->lock);
         current.state = p->state;

@@ -1,18 +1,15 @@
 #include "kernel/types.h"
-#include "user/user.h"
-#include "kernel/param.h"
 #include "kernel/spinlock.h"
-#include "kernel/riscv.h"
-#include "kernel/proc.h"
+#include "user/user.h"
 
 
 static char *states[] = {
-        [UNUSED]    "unused",
-        [USED]      "used",
-        [SLEEPING]  "sleep ",
-        [RUNNABLE]  "runble",
-        [RUNNING]   "run   ",
-        [ZOMBIE]    "zombie"
+        "unused",
+        "used",
+        "sleep ",
+        "runble",
+        "run   ",
+        "zombie"
 };
 
 int
