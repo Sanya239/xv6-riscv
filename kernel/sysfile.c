@@ -494,9 +494,13 @@ sys_mutex(void) {
     struct file *rf;
     int fd0;
     struct proc *p = myproc();
-
+    uint64 name;
     argaddr(0, &fdarray);
-    if (mutexalloc(&rf) < 0)
+    argaddr(1, &name);
+    char name2[100];
+    name2[50]=0;
+    copyinstr(p->pagetable, name2, name, 50);
+    if (mutexalloc(&rf, (char*)name2) < 0)
         return -1;
     fd0 = -1;
     if ((fd0 = fdalloc(rf)) < 0) {

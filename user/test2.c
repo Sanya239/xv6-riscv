@@ -3,7 +3,7 @@
 #include "user/user.h"
 
 int read_write() {
-    int mx, err = mutex(&mx);
+    int mx, err = mutex(&mx, "read_mutex");
     if (err != 0) {
         fprintf(2, "mutex() failed \n");
         return err;
@@ -18,11 +18,12 @@ int read_write() {
         fprintf(2, "read_write_failed\n");
         return 2;
     }
+    close(mx);
     return 0;
 }
 
 int close1() {
-    int mx, err = mutex(&mx);
+    int mx, err = mutex(&mx, "close1_mutex");
     if (err != 0) {
         fprintf(2, "mutex() failed \n");
         return -1;
@@ -42,12 +43,13 @@ int close1() {
         fprintf(2, "close1 failed\n");
         return -1;
     }
+    close(mx);
 
     return 0;
 }
 
 int close2() {
-    int mx, err = mutex(&mx);
+    int mx, err = mutex(&mx, "close2_mutex");
     if (err != 0) {
         fprintf(2, "mutex_lock failed\n");
         return -1;
@@ -60,7 +62,7 @@ int close2() {
             return -1;
         }
         wait(0);
-        err= mutex_unlock(mx);
+        err = mutex_unlock(mx);
         if (err != 0) {
             fprintf(2, "close2 failed\n");
             return -1;
@@ -74,11 +76,13 @@ int close2() {
         }
         exit(0);
     }
+    close(mx);
+
     return 0;
 }
 
 int free1() {
-    int mx, err = mutex(&mx);
+    int mx, err = mutex(&mx, "free_mutex");
     if (err != 0) {
         fprintf(2, "mutex_lock failed\n");
         return -1;
@@ -94,7 +98,10 @@ int free1() {
         mutex_lock(mx);
         exit(0);
     }
+    close(mx);
+
     return 0;
+
 }
 
 int main(int argc, char *argv[]) {

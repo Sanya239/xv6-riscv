@@ -11,18 +11,17 @@
 #define PIPESIZE 512
 
 int
-mutexalloc(struct file **f0) {
-    printf("using mutexalloc\n");
+mutexalloc(struct file **f0, char* name) {
+    printf("using mutexalloc on %s\n", name);
     struct sleeplock *lk;
-
     lk = 0;
     *f0 = 0;
     if ((*f0 = filealloc()) == 0)
         goto bad;
     if ((lk = (struct sleeplock *) kalloc()) == 0)
         goto bad;
-    printf("using kalloc\n");
-    initsleeplock(lk, "mutex");
+    printf("using kalloc in %lx\n", (uint64)lk);
+    initsleeplock(lk, name);
     (*f0)->type = FD_MUTEX;
 
     (*f0)->readable = 0;
@@ -40,7 +39,8 @@ mutexalloc(struct file **f0) {
 
 void
 mutexclose(struct sleeplock *lk) {
-    printf("using mutexclose\n");
+    printf("using mutexclose on %s\n", lk->name);
+    printf("using kfree in %lx\n", (uint64) lk);
+    kfree(lk->name);
     kfree((char *) lk);
-    printf("using kfree\n");
 }

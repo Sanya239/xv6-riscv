@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
     }
 
     int mx;
-    int err = mutex(&mx);
+    int err = mutex(&mx, "test1_mutex");
     if (err != 0) {
         fprintf(2, "mutex() err\n");
     }
@@ -18,9 +18,17 @@ int main(int argc, char *argv[]) {
         int pid = getpid();
         for (int i = 1; i < argc; i++) {
             for (int j = 0; argv[i][j] != '\0'; j++) {
-                mutex_lock(mx);
+                err = mutex_lock(mx);
+                if (err != 0) {
+                    fprintf(2, "mutex_lock() failed \n");
+                    exit(-1);
+                }
                 printf("pid: %d, char %c\n", pid, argv[i][j]);
-                mutex_unlock(mx);
+                err = mutex_unlock(mx);
+                if (err != 0) {
+                    fprintf(2, "mutex_unlock() failed \n");
+                    exit(-1);
+                }
             }
         }
         exit(0);
@@ -31,9 +39,17 @@ int main(int argc, char *argv[]) {
         int pid = getpid();
         for (int i = 1; i < argc; i++) {
             for (int j = 0; argv[i][j] != '\0'; j++) {
-                mutex_lock(mx);
+                err = mutex_lock(mx);
+                if (err != 0) {
+                    fprintf(2, "mutex_lock() failed \n");
+                    exit(-1);
+                }
                 printf("pid: %d, char %c\n", pid, argv[i][j]);
-                mutex_unlock(mx);
+                err = mutex_unlock(mx);
+                if (err != 0) {
+                    fprintf(2, "mutex_unlock() failed \n");
+                    exit(-1);
+                }
             }
         }
         exit(0);

@@ -13,7 +13,9 @@ void
 initsleeplock(struct sleeplock *lk, char *name)
 {
   initlock(&lk->lk, "sleep lock");
-  lk->name = name;
+  lk->name = (char*)kalloc();
+  strncpy(lk->name, name, strlen(name));
+  lk->name[strlen((name)+1)]=0;
   lk->locked = 0;
   lk->pid = 0;
 }

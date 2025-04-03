@@ -140,6 +140,7 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
+	$U/_test0\
 	$U/_test1\
 	$U/_test2\
 

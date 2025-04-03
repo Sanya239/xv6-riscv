@@ -117,7 +117,7 @@ int piperead(struct pipe *, uint64, int);
 int pipewrite(struct pipe *, uint64, int);
 
 // mutex.c
-int mutexalloc(struct file **f0);
+int mutexalloc(struct file **f0, char *name);
 
 void mutexclose(struct sleeplock *lk);
 

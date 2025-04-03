@@ -43,7 +43,7 @@ int sleep(int);
 
 int uptime(void);
 
-int mutex(int *);
+int mutex(int *fd, char *name);
 
 int mutex_lock(int);
 
