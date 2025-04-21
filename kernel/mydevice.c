@@ -39,7 +39,7 @@ mydevicewrite(short minor, int user_src, uint64 src, int n) {
     return -1;
   }
   if (minor == 2) {
-    if (n > sizeof(mydevice.urandom_seed)) {
+    if (n != sizeof(mydevice.urandom_seed)) {
       return -1;
     }
     acquire(&mydevice.lock);
@@ -81,20 +81,29 @@ mydeviceread(short minor, int user_dst, uint64 dst, int n) {
     return target - n;
   }
   if (minor == 2) {
-    acquire(&mydevice.lock);
-    mydevice.urandom_seed = mydevice.urandom_seed * MYDEVICE_MULTIPLIER + MYDEVICE_INCREMENT;
-    uint64 random_value = mydevice.urandom_seed;
-    release(&mydevice.lock);
 
-    if (n != sizeof(uint64)) {
-      return -1;
+
+    uint target;
+    char cbuf;
+    target = n;
+    while (n > 0) {
+      acquire(&mydevice.lock);
+      mydevice.urandom_seed = mydevice.urandom_seed * MYDEVICE_MULTIPLIER + MYDEVICE_INCREMENT;
+      cbuf = mydevice.urandom_seed & 0xff;
+      if (either_copyout(user_dst, dst, &cbuf, 1) == -1)
+        break;
+
+      dst++;
+      --n;
+      release(&mydevice.lock);
     }
-    if (either_copyout(user_dst, dst, (char *) &random_value, sizeof (uint64)) == -1)
-      return -1;
-    return sizeof(uint64);
+    return target - n;
   }
   if (minor == 3) {
-    return mydevice.nullstat_count;
+    if (either_copyout(user_dst, dst, &mydevice.nullstat_count, 1) == -1) {
+      return -1;
+    }
+    return sizeof(mydevice.nullstat_count);
   }
 
   release(&mydevice.lock);
