@@ -43,7 +43,7 @@ consputc(int c)
 
 struct {
   struct spinlock lock;
-  
+
   // input
 #define INPUT_BUF_SIZE 128
   char buf[INPUT_BUF_SIZE];
@@ -56,7 +56,7 @@ struct {
 // user write()s to the console go here.
 //
 int
-consolewrite(int user_src, uint64 src, int n)
+consolewrite(short minor, int user_src, uint64 src, int n)
 {
   int i;
 
@@ -77,7 +77,7 @@ consolewrite(int user_src, uint64 src, int n)
 // or kernel address.
 //
 int
-consoleread(int user_dst, uint64 dst, int n)
+consoleread(short minor, int user_dst, uint64 dst, int n)
 {
   uint target;
   int c;
@@ -174,7 +174,7 @@ consoleintr(int c)
     }
     break;
   }
-  
+
   release(&cons.lock);
 }
 
@@ -190,3 +190,5 @@ consoleinit(void)
   devsw[CONSOLE].read = consoleread;
   devsw[CONSOLE].write = consolewrite;
 }
+
+

@@ -15,11 +15,31 @@ int
 main(void)
 {
   int pid, wpid;
-
+  printf("init: starting\n");
   if(open("console", O_RDWR) < 0){
     mknod("console", CONSOLE, 0);
     open("console", O_RDWR);
   }
+  printf("init: starting xv6\n");
+  if(open("mydevice0", O_RDWR) < 0){
+    mknod("mydevice0", MYDEVICE, 0);
+    open("mydevice0", O_RDWR);
+  }
+  printf("init: starting xv7\n");
+  if(open("mydevice1", O_RDWR) < 0){
+    mknod("mydevice1", MYDEVICE, 1);
+    open("mydevice1", O_RDWR);
+  }
+  printf("init: starting xv8\n");
+  if(open("mydevice2", O_RDWR) < 0){
+    mknod("mydevice2", MYDEVICE, 2);
+    open("mydevice2", O_RDWR);
+  }
+  if(open("mydevice3", O_RDWR) < 0){
+    mknod("mydevice3", MYDEVICE, 3);
+    open("mydevice3", O_RDWR);
+  }
+  printf("init: starting xv9\n");
   dup(0);  // stdout
   dup(0);  // stderr
 
