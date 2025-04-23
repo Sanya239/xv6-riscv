@@ -22,6 +22,9 @@ void            consoleinit(void);
 void            consoleintr(int);
 void            consputc(int);
 
+// mydevice.c
+void            mydeviceinit(void);
+
 // exec.c
 int             exec(char*, char**);
 

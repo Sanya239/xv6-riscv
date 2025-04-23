@@ -233,7 +233,6 @@ void
 userinit(void)
 {
   struct proc *p;
-
   p = allocproc();
   initproc = p;
   

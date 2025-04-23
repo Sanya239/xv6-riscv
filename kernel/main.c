@@ -8,10 +8,10 @@ volatile static int started = 0;
 
 // start() jumps here in supervisor mode on all CPUs.
 void
-main()
-{
-  if(cpuid() == 0){
+main() {
+  if (cpuid() == 0) {
     consoleinit();
+    mydeviceinit();
     printfinit();
     printf("\n");
     printf("xv6 kernel is booting\n");
@@ -32,8 +32,7 @@ main()
     __sync_synchronize();
     started = 1;
   } else {
-    while(started == 0)
-      ;
+    while (started == 0);
     __sync_synchronize();
     printf("hart %d starting\n", cpuid());
     kvminithart();    // turn on paging
@@ -41,5 +40,5 @@ main()
     plicinithart();   // ask PLIC for device interrupts
   }
 
-  scheduler();        
+  scheduler();
 }
