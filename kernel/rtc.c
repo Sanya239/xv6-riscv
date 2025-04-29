@@ -17,7 +17,6 @@ int sys_rtc(void) {
   uint64 t;
   argaddr(0, &t);
   uint64 time = rtc_read();
-  printf("%lx\n", time);
   copyout(myproc()->pagetable, t, (char *) &time, sizeof(time));
   return 0;
 }
