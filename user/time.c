@@ -17,12 +17,6 @@ void timestamp_to_datetime(uint64 timestamp, int *year, int *month, int *day, in
 
   int is_before_epoch = 0;
 
-  if ((long) timestamp > (1l << 63)) {
-    is_before_epoch = 1;
-    timestamp -= (1l << 63);
-    timestamp -= (1l << 63);
-    timestamp *= -1;
-  }
 
   *fractional_second = timestamp % 1000000000;
   long seconds = (long) (timestamp);
@@ -36,24 +30,9 @@ void timestamp_to_datetime(uint64 timestamp, int *year, int *month, int *day, in
   seconds /= 24;
 
   *year = 1970;
-  *day_of_week = 3; 
+  *day_of_week = 3;
 
-  if (is_before_epoch) {
-    *second = 59 - *second;
-    *minute = 59 - *minute;
-    *hour = 23 - *hour;
-    while (seconds >= 0) {
-      (*year)--;
-      int days_in_year = is_leap_year(*year) ? 366 : 365;
-      *day_of_week = (*day_of_week - days_in_year % 7 + 7) % 7;
 
-      seconds -= days_in_year;
-    }
-
-    seconds *= -1;
-    seconds-=1;
-
-  } else {
     while (1) {
       int days_in_year = is_leap_year(*year) ? 366 : 365;
       if (seconds < days_in_year)
@@ -66,14 +45,14 @@ void timestamp_to_datetime(uint64 timestamp, int *year, int *month, int *day, in
   *month = 0;
   while (*month < 12) {
     int days = days_in_month[*month];
-    if (*month == 1 && is_leap_year(*year)) 
+    if (*month == 1 && is_leap_year(*year))
       days++;
     if (seconds < days)
       break;
     seconds -= days;
     *day_of_week = (*day_of_week + days) % 7;
     (*month)++;
-  }
+  
 
   *day = seconds + 1;
   *day_of_week = (*day_of_week + seconds) % 7;
