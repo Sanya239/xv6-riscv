@@ -15,9 +15,6 @@ int is_leap_year(int year) {
 void timestamp_to_datetime(uint64 timestamp, int *year, int *month, int *day, int *day_of_week,
                            int *hour, int *minute, int *second, int *fractional_second) {
 
-  int is_before_epoch = 0;
-
-
   *fractional_second = timestamp % 1000000000;
   long seconds = (long) (timestamp);
   seconds /= 1000000000;
@@ -33,14 +30,13 @@ void timestamp_to_datetime(uint64 timestamp, int *year, int *month, int *day, in
   *day_of_week = 3;
 
 
-    while (1) {
-      int days_in_year = is_leap_year(*year) ? 366 : 365;
-      if (seconds < days_in_year)
-        break;
-      seconds -= days_in_year;
-      *day_of_week = (*day_of_week + days_in_year) % 7;
-      (*year)++;
-    }
+  while (1) {
+    int days_in_year = is_leap_year(*year) ? 366 : 365;
+    if (seconds < days_in_year)
+      break;
+    seconds -= days_in_year;
+    *day_of_week = (*day_of_week + days_in_year) % 7;
+    (*year)++;
   }
   *month = 0;
   while (*month < 12) {
@@ -52,13 +48,13 @@ void timestamp_to_datetime(uint64 timestamp, int *year, int *month, int *day, in
     seconds -= days;
     *day_of_week = (*day_of_week + days) % 7;
     (*month)++;
-  
 
-  *day = seconds + 1;
-  *day_of_week = (*day_of_week + seconds) % 7;
 
+    *day = seconds + 1;
+    *day_of_week = (*day_of_week + seconds) % 7;
+
+  }
 }
-
 int main(int argc, char *argv[]) {
   uint64 time;
 
